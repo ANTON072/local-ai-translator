@@ -10,6 +10,9 @@
     "core:window:allow-show",
     "core:window:allow-set-focus",
     "opener:default",
-    "global-shortcut:default"
+    "global-shortcut:default",
+    "autostart:allow-enable",
+    "autostart:allow-disable",
+    "autostart:allow-is-enabled"
   ]
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { enable, disable, isEnabled } from "@tauri-apps/plugin-autostart";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { Check, Copy, Languages, Settings, X } from "lucide-react";
@@ -34,6 +35,7 @@ function Translator() {
   const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draftConfig, setDraftConfig] = useState<Config>(DEFAULT_CONFIG);
+  const [draftLaunchAtLogin, setDraftLaunchAtLogin] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const rootRef = useRef<HTMLElement>(null);
@@ -105,6 +107,7 @@ function Translator() {
       // トレイメニューの「設定…」から
       listen("open-settings", () => {
         setDraftConfig((c) => c);
+        isEnabled().then(setDraftLaunchAtLogin).catch(() => {});
         setSettingsOpen(true);
       }),
     ];
@@ -144,11 +147,16 @@ function Translator() {
     try {
       await invoke("save_config", { config: draftConfig });
       setConfig(draftConfig);
+      if (draftLaunchAtLogin) {
+        await enable();
+      } else {
+        await disable();
+      }
       setSettingsOpen(false);
     } catch (e) {
       setError(String(e));
     }
-  }, [draftConfig]);
+  }, [draftConfig, draftLaunchAtLogin]);
 
   return (
     <main
@@ -167,6 +175,7 @@ function Translator() {
             aria-label="設定"
             onClick={() => {
               setDraftConfig(config);
+              isEnabled().then(setDraftLaunchAtLogin).catch(() => {});
               setSettingsOpen(true);
             }}
           >
@@ -266,6 +275,15 @@ function Translator() {
                 }
                 placeholder="http://localhost:11434"
               />
+            </label>
+            <label className="flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={draftLaunchAtLogin}
+                onChange={(e) => setDraftLaunchAtLogin(e.currentTarget.checked)}
+                className="size-4 cursor-pointer"
+              />
+              <span className="text-sm font-medium">ログイン時に起動</span>
             </label>
           </div>
           <DialogFooter>
