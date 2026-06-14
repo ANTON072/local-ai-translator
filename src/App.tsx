@@ -133,7 +133,7 @@ function Translator() {
 
   const handleClose = useCallback(async () => {
     reset();
-    await getCurrentWindow().hide();
+    await invoke("hide_window");
   }, [reset]);
 
   const handleCopy = useCallback(async () => {
@@ -163,7 +163,13 @@ function Translator() {
       ref={rootRef}
       className="flex w-screen flex-col gap-3 bg-background p-4 text-foreground"
     >
-      <div className="flex items-center justify-between">
+      <div
+        className="flex items-center justify-between cursor-move select-none"
+        onMouseDown={(e) => {
+          if ((e.target as HTMLElement).closest("button")) return;
+          void getCurrentWindow().startDragging();
+        }}
+      >
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <Languages className="size-4" />
           Local MS Translator

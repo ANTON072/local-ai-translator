@@ -24,6 +24,10 @@ const MAX_INPUT_CHARS: usize = 5000;
 struct Config {
     model: String,
     endpoint: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    window_x: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    window_y: Option<i32>,
 }
 
 impl Default for Config {
@@ -31,6 +35,8 @@ impl Default for Config {
         Config {
             model: "qwen2.5:14b".to_string(),
             endpoint: "http://localhost:11434".to_string(),
+            window_x: None,
+            window_y: None,
         }
     }
 }
@@ -55,15 +61,19 @@ fn load_config() -> Config {
     load_config_internal()
 }
 
-#[tauri::command]
-fn save_config(config: Config) -> Result<(), String> {
+fn save_config_internal(config: &Config) -> Result<(), String> {
     let path = config_path();
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
-    let body = serde_json::to_string_pretty(&config).map_err(|e| e.to_string())?;
+    let body = serde_json::to_string_pretty(config).map_err(|e| e.to_string())?;
     std::fs::write(&path, body).map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+fn save_config(config: Config) -> Result<(), String> {
+    save_config_internal(&config)
 }
 
 // Ollama /api/chat のストリーミング応答 1 行分。
@@ -255,24 +265,42 @@ fn grab_selection() -> Result<String, String> {
     Ok(grabbed.unwrap_or_default())
 }
 
-/// Spotlight 風に画面中央やや上へウィンドウを移動する。
-/// current_monitor 上で水平中央・上から約 20% の位置（物理座標）に置く。
-fn position_center_top<R: Runtime>(window: &WebviewWindow<R>) {
+/// 画面中央へウィンドウを移動する（初回表示時のデフォルト位置）。
+fn position_center<R: Runtime>(window: &WebviewWindow<R>) {
     let (Ok(Some(monitor)), Ok(win_size)) = (window.current_monitor(), window.outer_size()) else {
         return;
     };
     let screen = monitor.size();
     let origin = monitor.position();
     let x = origin.x + (screen.width as i32 - win_size.width as i32) / 2;
-    let y = origin.y + (screen.height as f64 * 0.2) as i32;
+    let y = origin.y + (screen.height as i32 - win_size.height as i32) / 2;
     let _ = window.set_position(PhysicalPosition::new(x, y));
 }
 
-/// 中央やや上へ配置してから表示しフォーカスする。
+/// 保存済み位置があれば復元、なければ画面中央へ配置してから表示しフォーカスする。
 fn show_window<R: Runtime>(window: &WebviewWindow<R>) {
-    position_center_top(window);
+    let config = load_config_internal();
+    if let (Some(x), Some(y)) = (config.window_x, config.window_y) {
+        let _ = window.set_position(PhysicalPosition::new(x, y));
+    } else {
+        position_center(window);
+    }
     let _ = window.show();
     let _ = window.set_focus();
+}
+
+/// フロントエンドの×ボタンから呼ばれる。位置を保存してからウィンドウを隠す。
+#[tauri::command]
+fn hide_window<R: Runtime>(window: tauri::Window<R>) -> Result<(), String> {
+    if let Ok(pos) = window.outer_position() {
+        let mut config = load_config_internal();
+        config.window_x = Some(pos.x);
+        config.window_y = Some(pos.y);
+        save_config_internal(&config)?;
+    }
+    let _ = window.hide();
+    let _ = window.emit("reset", ());
+    Ok(())
 }
 
 /// cmd+j のトグル挙動。表示中なら隠し、非表示なら
@@ -284,6 +312,12 @@ fn toggle_window<R: Runtime>(app: &AppHandle<R>) {
     };
 
     if window.is_visible().unwrap_or(false) {
+        if let Ok(pos) = window.outer_position() {
+            let mut config = load_config_internal();
+            config.window_x = Some(pos.x);
+            config.window_y = Some(pos.y);
+            let _ = save_config_internal(&config);
+        }
         let _ = window.hide();
         let _ = window.emit("reset", ());
     } else {
@@ -353,6 +387,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             load_config,
             save_config,
+            hide_window,
             translate,
             warm_model,
             check_accessibility,
