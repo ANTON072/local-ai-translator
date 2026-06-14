@@ -172,7 +172,7 @@ function Translator() {
       >
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <Languages className="size-4" />
-          Local MS Translator
+          Local AI Translator
         </div>
         <div className="flex items-center gap-1">
           <Button
