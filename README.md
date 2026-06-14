@@ -3,6 +3,8 @@
 macOS のメニューバーに常駐し、選択した英文を `cmd+J` で即座に日本語へ翻訳するアプリ。
 翻訳はローカル LLM（Ollama）で完結し、テキストは外部へ一切送信されない。
 
+![screenshot](docs/screenshot.png)
+
 ## 動作環境
 
 - macOS（Apple Silicon / Intel どちらも可）
