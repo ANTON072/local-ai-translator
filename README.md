@@ -112,7 +112,7 @@ pnpm tauri build
 | Model | `qwen2.5:14b` | 使用する Ollama モデル名 |
 | Endpoint | `http://localhost:11434` | Ollama の API エンドポイント |
 
-設定は `~/.config/local-ms-translator/config.json` に保存される。
+設定は `~/.config/local-ai-translator/config.json` に保存される。
 
 ---
 
