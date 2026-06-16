@@ -14,8 +14,9 @@ use tauri::{
     AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow,
 };
 
-// 翻訳の指示。訳文のみを返させる（前置き・説明を付けさせない）。
-const SYSTEM_PROMPT: &str = "あなたはプロの翻訳者です。入力された英文を自然で読みやすい日本語に翻訳してください。訳文のみを出力し、前置き・注釈・原文の繰り返しは一切付けないでください。固有名詞・製品名・ブランド名はそのまま残し、それ以外の英単語は日本語に翻訳してください。慣用表現・イディオムは直訳せず、意味を汲んだ自然な日本語に意訳してください。";
+// 翻訳指示。英語で書くことで qwen2.5 のような中国語ファーストモデルでも日本語出力が安定する。
+// （日本語のみのプロンプトだと簡体字/繁体字が返ってくるケースがあった）
+const SYSTEM_PROMPT: &str = "You are an English-to-Japanese translator. Your only job is to translate the given English text into Japanese.\n\nSTRICT OUTPUT RULES — follow all of them without exception:\n1. Output ONLY the Japanese translation. No preamble, no explanation, no original text, no notes.\n2. Use Japanese script only: hiragana (ひらがな), katakana (カタカナ), and kanji as written in Japan. The output MUST contain hiragana or katakana.\n3. NEVER output Chinese — neither Simplified (简体字) nor Traditional (繁體字). This is an absolute prohibition.\n4. Do NOT show corrections, revisions, or reasoning steps. Output only the final translation.\n5. Keep proper nouns, product names, and brand names unchanged.\n6. Translate idioms naturally into Japanese equivalents — never word-for-word.";
 
 // 入力の上限。これを超えた分は切り捨て、フロントへ警告を出す。
 const MAX_INPUT_CHARS: usize = 5000;
