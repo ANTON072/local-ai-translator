@@ -84,22 +84,6 @@ function Translator() {
       }),
       listen("translate-done", () => {
         setIsTranslating(false);
-        setOutput((prev) => {
-          // モデルが「中国語で翻訳→修正：→日本語」という自己修正パターンを出すことがある。
-          // 「修正：」以降の日本語部分だけを残す。
-          const correctionMatch = prev.match(/修正[：:]\s*\n?([\s\S]+)$/);
-          if (correctionMatch) return correctionMatch[1].trim();
-
-          // ひらがな・カタカナが一切なく CJK 文字だけなら中国語出力と判定してエラーにする。
-          const hasKana = /[ぁ-ゖァ-ヶ]/.test(prev);
-          const hasCJK = /[一-鿿]/.test(prev);
-          if (hasCJK && !hasKana) {
-            setError("モデルが中国語を出力しました。もう一度お試しください。");
-            return "";
-          }
-
-          return prev;
-        });
       }),
       listen<string>("translate-warning", (e) => {
         setWarning(e.payload);
