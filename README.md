@@ -21,16 +21,16 @@ brew install ollama
 
 ### 2. 翻訳モデルの取得
 
-デフォルトモデルは `qwen2.5:14b`。以下のコマンドで pull する（約 9 GB）。
+デフォルトモデルは `gemma3:27b`。以下のコマンドで pull する（約 17 GB）。
 
 ```bash
-ollama pull qwen2.5:14b
+ollama pull gemma3:27b
 ```
 
-軽量モデルを使いたい場合は `qwen2.5:7b`（約 4.7 GB）でも動作する。
+軽量モデルを使いたい場合は `gemma3:12b`（約 8 GB）でも動作する。
 
 ```bash
-ollama pull qwen2.5:7b
+ollama pull gemma3:12b
 ```
 
 ### 3. Ollama の起動
@@ -109,7 +109,7 @@ pnpm tauri build
 
 | 設定項目 | デフォルト値 | 説明 |
 |----------|-------------|------|
-| Model | `qwen2.5:14b` | 使用する Ollama モデル名 |
+| Model | `gemma3:27b` | 使用する Ollama モデル名 |
 | Endpoint | `http://localhost:11434` | Ollama の API エンドポイント |
 
 設定は `~/.config/local-ai-translator/config.json` に保存される。
@@ -124,10 +124,10 @@ pnpm tauri build
 
    ```bash
    # 例: より軽量なモデル
-   ollama pull qwen2.5:7b
+   ollama pull gemma3:12b
 
-   # 例: より高精度なモデル
-   ollama pull qwen2.5:32b
+   # 例: より高精度なモデル（デフォルト）
+   ollama pull gemma3:27b
    ```
 
 2. アプリの Settings 画面で **Model** フィールドを変更して保存する。
@@ -135,7 +135,7 @@ pnpm tauri build
 ### 既存モデルを最新版に更新する
 
 ```bash
-ollama pull qwen2.5:14b
+ollama pull gemma3:27b
 ```
 
 同じモデル名で pull し直すと最新バージョンに更新される。

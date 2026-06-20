@@ -33,7 +33,7 @@ struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            model: "qwen2.5:14b".to_string(),
+            model: "gemma3:27b".to_string(),
             endpoint: "http://localhost:11434".to_string(),
             window_x: None,
             window_y: None,

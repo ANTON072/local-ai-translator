@@ -38,7 +38,7 @@ Two halves communicate over Tauri commands (frontend→backend calls) and events
 
 ## Config
 
-User config lives at `~/.config/local-ms-translator/config.json` (`model`, `endpoint`). Defaults: model `qwen2.5:14b`, endpoint `http://localhost:11434`. Editable via the in-app settings dialog. The `translate` command reads config fresh on each call.
+User config lives at `~/.config/local-ms-translator/config.json` (`model`, `endpoint`). Defaults: model `gemma3:27b`, endpoint `http://localhost:11434`. Editable via the in-app settings dialog. The `translate` command reads config fresh on each call.
 
 ## Constraints & gotchas
 
